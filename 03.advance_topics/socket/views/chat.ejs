@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include common/head.ejs %>
+    <!-- CDN 서비스로 삽입 -->
+    <!--
+  <script src="https://cdn.socket.io/4.7.4/socket.io.min.js" integrity="sha384-Gr6Lu2Ajx28mzwyVR8CFkULdCU7kMlZ9UthllibdOSo6qAiN+yXNHqtgdTvFXMT4" crossorigin="anonymous"></script>
+  -->
+    <!-- 본 서비스에서 제공 -->
+    <script src="/socket.io/socket.io.js"></script>
+
+</head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
+  <div class="wrapper">
+
+    <%- include common/navbar.ejs %>
+      <%- include common/left.ejs %>
+        <%- include pages/chatContent.ejs %>
+          <%- include common/footer.ejs %>
+            <%- include common/right.ejs %>
+  </div>
+  <!-- ./wrapper -->
+  <%- include common/addjs.ejs %>
+    <script>
+      let nickname = '';
+      let gMyroom = '';
+      
+      // 실질적 소켓 통신이 수행됨 -> CDN
+      // 1. 서버 접속
+      const socket = io.connect('http://localhost:3000') // 만약 websocket이면 ws://
+      console.log('클라이언트가 접속 OK,소켓획득')
+      // 2. 클라이언트 준비 : 접속시 수행할 내용 작성
+      socket.on('connect', () => {
+        // 서버에 접속되면 사용자의 익명닉네임 입력받는다
+        nickname = prompt('익명닉네임을 입력하세요')
+        console.log(nickname)
+        // 익명닉네임을 서버로 전송(emit)
+        socket.emit('cs_send_nname', nickname, new Date())
+      })
+      // 3. 서버가 보낸 메세지를 클라이언트 채팅창에 세팅
+      socket.on('sc_send_msg', (sender, msg, date) => {
+        console.log(sender, msg, date);
+        // 서버로부터 전송받은 메시지를 화면에 표시 -> DOM 조작, UI 조작
+        addMessage(sender, msg, date, sender == nickname ? true : false)
+      });
+      // 4. 룸의 모든 정보를 받아서 화면에 display
+      socket.on('sc_send_roominfo', (rooms, myroom) => {
+        // 지역 변수로 전달된 '내 방 정보'를 전역변수로 세팅
+        gMyroom = myroom;
+        console.log( 'rooms, myroom', rooms, myroom );
+        initRoom( rooms, myroom );
+      });
+      socket.on('sc_send_clear', () => {
+        $('.direct-chat-messages').empty();
+      })
+      
+      // 전송 이벤트 등록
+      // 입력창에서 Enter => keypress => Enter 키만 체크
+      $('#inputView').on('keypress', e => {
+        if ( e.keyCode == 13 ) {
+          sendMessage( socket );
+        }
+      });
+      // send 버튼 클릭   => click
+      $('#sendBtn').on('click', e => {
+        sendMessage( socket );
+      });
+      // 방 목록에서 특정 방 선택
+      $('#roomList').on('change', e => {
+        // 변경 값
+        let selRoom = e.target.value;
+        console.log( selRoom );
+        // 방 변경 이벤트 발송
+        // 3. 사용자가 다른 방을 선택하면 방 변경이 진행
+        if ( selRoom === gMyroom ) {
+          console.log( '본인 방이므로 이벤트 없음' );
+          return;
+        }
+        // 3-1. 방 변경 이벤트 서버로 전송
+        socket.emit('cs_send_roomchange', selRoom);
+      })
+      
+      // 처음 방 목록 세팅
+      function initRoom( rooms, myroom ) {
+        // 1. 화면에 방목록 출력
+        $('#roomList').empty()
+        // for(){} or map() or $.each() or $().each()
+        $.each(rooms, (idx, room) => {
+          // 2. 본인이 속한 방은 빨간색으로 표기
+          let html = '';
+          if ( room === myroom ) {
+            // 내 방
+            html = `<option style='color:red;' value="${room}">${room}</option>`;
+          } else {
+            // 내 방 X
+            html = `<option value="${room}">${room}</option>`;
+          }
+          $('#roomList').append(html);
+        })
+        /*for (room of rooms) {
+          let html = `<option val="${room}">${room}</option>`;
+          $('#roomList').append(html);
+        }*/
+        // 4. 속한 방이 변경되므로 색상 변경, 환영 메시지 등등 출력 (채팅방 내용 초기화 후 출력)
+        // 5. 기존 방에 있는 멤버들에게는 xx님이 퇴장하였습니다. 표기
+        
+      }
+
+      // 사용자가 글 입력 후 Enter or send 버튼 클릭 시 메시지를 서버에 전송(socket.emit())
+      function sendMessage( socket ) {
+        // 1. 입력 값 획득
+        const msg = $('#inputView').val().trim(); // trim() : 공백제거
+        console.log( msg );
+        if ( msg === '' || msg === undefined || msg === null ) {
+          alert( '메시지를 입력 후 전송하세요' );
+          return;
+        }
+        // 2. 서버로 전송
+        socket.emit( 'cs_send_msg', msg, new Date() );
+        // 3. 입력 창 초기화
+        $('#inputView').val('');
+      } 
+
+      // 서버 측에서 전송받은 메세지를 화면 처리
+      function addMessage(sender, msg, dateTime, isMyMsg) {
+        let html = '';
+        if (isMyMsg) {
+           // 오른쪽 - 나
+           html = `
+           <div class="direct-chat-msg right">
+             <div class="direct-chat-infos clearfix">
+               <span class="direct-chat-name float-right">${sender}</span>
+               <span class="direct-chat-timestamp float-left">${dateTime}</span>
+             </div>
+ 
+             <img class="direct-chat-img" src="dist/img/user3-128x128.jpg" alt="message user image">
+ 
+             <div class="direct-chat-text">
+               ${msg}
+             </div>
+ 
+           </div>`
+        } else {
+          // 왼쪽 - 다른 사람
+          html = `<div class="direct-chat-msg">
+            <div class="direct-chat-infos clearfix">
+              <span class="direct-chat-name float-left">${sender}</span>
+              <span class="direct-chat-timestamp float-right">${dateTime}</span>
+            </div>
+
+            <img class="direct-chat-img" src="dist/img/user1-128x128.jpg" alt="message user image">
+
+            <div class="direct-chat-text">
+              ${msg}
+            </div>
+
+          </div>`
+        }
+        // 채팅창에 메시지 추가
+        $('.direct-chat-messages').append(html);
+
+        // TODO 자동 스크롤 처리 (대화 끝에 맞춰지도록) = > 왜 안 돼 ㅋㅋㅋㅋ ㅜ
+        let board = document.querySelector('..direct-chat-messages');
+        // 2000이라는 값은 그만큼 크게 이동하라는 의미
+        // 실제는 정밀하게 계산하여 세팅
+        board.scrollBy(0, 2000);
+      }
+    </script>
+</body>
+
+</html>

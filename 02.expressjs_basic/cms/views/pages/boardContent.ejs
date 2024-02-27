@@ -1,0 +1,137 @@
+<!-- indexContent  Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">RDS 연동 게시판</h1>
+        </div><!-- /.col -->
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">게시판</li>
+          </ol>
+        </div><!-- /.col -->
+      </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- /.content-header -->
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+
+      <div class="row">
+
+        <div class="col-md-12">
+          <div class="card card-warning">
+            <div class="card-header">
+              <h3 class="card-title">국가 코드 검색</h3>
+            </div>
+
+            <div class="card-body">
+              <form method="post" id="searchForm">
+                <div class="row">
+                  <div class="col-sm-6">
+
+                    <div class="form-group">
+                      <label>국가코드</label>
+                      <select class="form-control">
+                        <option>option 1</option>
+                        <option>option 2</option>
+                        <option>option 3</option>
+                        <option>option 4</option>
+                        <option>option 5</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <label>검색어</label>
+                      <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" name="keyword" id="keyword"
+                          placeholder="검색어 작성 후 검색 버튼 클릭">
+                        <span class="input-group-append">
+                          <button type="submit" class="btn btn-info btn-flat">검색</button>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </form>
+              <div id="searchResultView">
+                <p>검색어 : <span>KOR</span></p>
+                <ul>
+                  <li>서울</li>
+                  <li>부산</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">도시 정보 목록 - 인구순</h3>
+            </div>
+
+            <div class="card-body">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th style="width: 60px">#</th>
+                    <th>Name</th>
+                    <th>CountryCode</th>
+                    <th>District</th>
+                    <th>Population</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% for( let {ID, Name, CountryCode, District, Population} of citys ){ %>
+                    <tr>
+                      <td>
+                        <%= ID %>
+                      </td>
+                      <td>
+                        <%= Name %>
+                      </td>
+                      <td>
+                        <%= CountryCode %>
+                      </td>
+                      <td>
+                        <%= District %>
+                      </td>
+                      <td>
+                        <span class="badge bg-danger"><%= Population %> </span>
+                      </td>
+                    </tr>
+                    <% } %>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="card-footer clearfix">
+              <ul class="pagination pagination-sm m-0 float-right">
+                <!-- 
+                  - 1 ~ 10페이지까지 반복해서 동적으로 1, 2, ... 10까지 표현하시오
+                  - 여기서는 더미로 생성 -> 수치를 증가하면서 처리하는 방식으로 진행
+                -->
+                <a class="page-link" href="#">«</a>
+                <% for( let idx = 1; idx <= 10; idx++ ) { %>
+                  <li class="page-item"><a class="page-link" href="/board?pno=<%= idx %>"><%= idx %></a></li>
+                  <% } %>
+                  <a class="page-link" href="#">»</a></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /.container-fluid -->
+  </section>
+  <!-- /.content -->
+</div>

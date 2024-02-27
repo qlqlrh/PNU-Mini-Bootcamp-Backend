@@ -1,0 +1,9 @@
+{
+  "name": "03.advance_topics",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "mongoose": "^8.1.1"
+  }
+}

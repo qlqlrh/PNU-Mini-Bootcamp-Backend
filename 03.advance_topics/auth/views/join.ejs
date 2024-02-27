@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+
+    <div>
+      <fieldset>
+        <h3>회원가입</h3>
+        <!-- post 하는 주소 : /auth/join -->
+        <form method="post"> 
+            <input type="email" name="email" value="a@a.com"/>
+            <input type="password" name="password" value="1234"/>
+            <input type="text" name="nick" value="aaaa"/>
+            <input type="submit" value="회원가입"/>
+        </form>
+      </fieldset>
+    </div>
+  </body>
+</html>

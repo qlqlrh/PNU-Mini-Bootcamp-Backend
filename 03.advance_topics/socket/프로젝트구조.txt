@@ -1,0 +1,13 @@
+helloExpress
+├─bin
+│  ├─www            : 엔트리 포인트 ( 코드의 시작점 )
+├─public            : 정적 데이터가 위치함 ( 별도의 라우팅 필요 X )
+│  ├─images         : 이미지 파일가 위치함 ( jpg, png, gif, ... )
+│  ├─javascripts    : front js 파일 ( *.js )
+│  └─stylesheets    : 스타일시트 파일 ( css, sass, ... )
+├─routes            : backend 기반 작성 코드 ( 단, 다른 곳도 커스텀 설정 가능 )
+│  ├─index.js       : 비즈니스 로직을 구현한 코드, 홈페이지
+│  └─users.js       : 로그인, 로그아웃 등등 ...
+└─views             : 템플릿 파일들 위치 ( html, ejs, ... )
+└─app.js            : 실질적 엔트리 포인트 (각성 설정, express 생성, 기본 세팅, 라우팅 설정, ... )
+└─package.json      : 프로젝트 설정 파일 ( 실행 명령, 사용 패키지, 빌드 명령, 등등 각종 프로젝트 메타 정보 세팅 )

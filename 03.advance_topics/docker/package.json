@@ -1,0 +1,15 @@
+{
+  "name": "docker",
+  "version": "1.0.0",
+  "description": "- CI/CD\r         - Docker (git 기본)\r             - 개발 전\r                 - Docker 기반으로 개발 환경 구축 => 허브(이미지) => 팀 배포\r                 - 모든 팀원이 동일한 환경에서 개발\r                 - Docker CLi + UI(Client)\r                     -> Docker file (Cli를 연속적으로 묶은 세트)\r                     -> Docker Compose (여러 프로그램을 묶어서 세트로 구성, 3-tier)\r                         - web: nginx + was: nodejs(express) + db: mariadb(mongo)\r                     -> 클라우드 (AWS, azure, GCP) or 온프레미스 (사내구축)\r                     -> 쿠버네티스 (오케스트레이션) (Deops) <-> (MLOps)쿠보플로우(ex, MLflow, ...)\r                         -> 클라우드 기반 (제품 제공) 작업, 순수하게 쿠버네티스 구현",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "mongoose": "^8.1.1"
+  }
+}

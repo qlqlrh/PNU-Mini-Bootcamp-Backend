@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <!-- 여기서부터는 jQuery를 사용할 수 있다 -->
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+
+    <!-- 많은 데이터 중에서 특정 데이터(검색어 기준)를 추출하는 검색창 -->
+      <div>
+        <!-- 검색(DB, 엘라스틱넷, ...) -->
+        <!-- 검색어 작성 -> 검색 버튼 클릭 -> 검색 요청(ajax) -> 서버 -> 결과 획득 -> 화면 처리 (동적 구성, DOM 조작) -->
+        <fieldset>  
+          <form method="post" id="searchForm">
+            <select>
+              <!-- <option value="KOR">KOR</option>
+              <option value="USA">USA</option>
+              <option value="BRA">BRA</option> -->
+            </select>
+            <input type="text" name="keyword" id="keyword" placeholder="검색어 작성 후 검색 버튼 클릭"/>
+            <input type="submit" value="검색"/>
+          </form>
+          
+          <!-- 검색 결과를 나타내는 화면 -->
+          <div id="searchResultView">
+            <!-- <p>검색어 : <span>KOR</span></p>
+            <ul>
+              <li>서울</li>
+              <li>부산</li>
+            </ul> -->
+          </div>
+        </fieldset>
+    </div>
+
+    <!-- city 정보를 출력하는 테이블, 게시판 -->
+    <div>
+      <table border="1">
+        <!-- 테이블의 헤더, 볼드체 기본 -->
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>CountryCode</th>
+            <th>District</th>
+            <th>Population</th>
+          </tr>
+        </thead>
+        <!-- 테이블의 바디, 실데이터 표현 -->
+        <tbody>
+        <% for( let {ID, Name, CountryCode, District, Population} of citys) { %>
+          <tr>
+            <td><%= ID %></td>
+            <td><%= Name %></td>
+            <td><%= CountryCode %></td>
+            <td><%= District %></td>
+            <td><%= Population %></td>
+          </tr>
+        <% } %>
+      </tbody>
+
+      </table>
+    </div>
+
+    <!-- 프런트단에서 화면 조작, 서버와 통신(ajax) 등등 -->
+    <script>
+      // 최초 사이트가 뜨면 검색 결과 화면은 지워진다 (없다, 안 보인다)
+      $('#searchResultView').empty();
+
+      // 화면이 뜨고 0.5초 후에 서버에서 국가 코드를 가져와 select 완성
+      setTimeout(() => {
+        $.get({
+          url: '/board/ccode',
+          dataType: 'json',
+          success: data => {
+            // console.log( data.rows );
+            // select tag 밑에서 동적으로
+            // <option value="KOR">KOR</option> 형태로
+            // 232개를 추가하시오.
+            $('#searchForm > select').empty();
+            for (let { code } of data.rows) {
+              $('#searchForm > select').append(`
+                <option value=${code}>${code}</option>
+              `); // 덮어쓰기
+            }
+          }
+        })
+      }, 1000 * 0.5);
+
+      // 이벤트 추가
+      $('#searchForm > select').on('change', e => { // >은 직계 자식을 의미
+        console.log( e.target.value );
+        // 검색 입력창에 변경된 값을 세팅
+        $('#keyword').val( e.target.value );
+        // 강제 이벤트 발생 -> trigger()
+        // 검색 버튼을 자동으로 클릭해준다 => submit 이벤트 발생 => 검색 수행
+        $('#searchForm > [type=submit]').trigger('click');
+      })
+
+      // 테스트를 위해서 검색값을 미리 세팅
+      // $('#keyword').val('KOR');
+      
+      // 화면에 존재하는 모든 요소에 액세스 할 수 있다
+      // JS 사용법, 1. 대상을 특정해라 (css selector|xPath) 2. 이벤트 처리 (클릭, 통신, 화면조작, ...)
+      // id 속성으로 요소 찾기 => #id값
+      // jQuery에서 요소 특정 시 사용하는 문법 $('css selector')
+      // 표준 JS라면 
+      $('#searchForm').on('submit', e => {
+        // 화면이 넘어가지 않게 제어
+        e.preventDefault();
+        // ajax 처리
+        // 1. 사용자 검색어 추출
+        let keyword = $('#keyword').val()
+        console.log( keyword );
+        // 2. ajax 통식 : $.ajax() or $.get() or $.post() <-> fetch() : 순수 JS
+        $.post({
+          url: '/board/search',                 // 데이터를 보내는 서버측 url
+          data: $('#searchForm').serialize(),   // json 형태로 전송
+          // data: `word=${keyword}`            // 키=값&키=값,...
+          dataType: 'json',                     // 응답 데이터는 json 형식을 따른다 => 서버측은 res.json()로 응답
+          success: (res) => {                   // 통신 성공
+            // let { rows } = res;                 // 검색 결과
+            addSearchResultView( keyword, res );
+          },
+          error: (err) => {                     // 통신 오류, 파싱(json로 변환) 오류
+            console.log( '에러', err );
+          },
+        })
+        return false;
+      })
+      // document.querySelector('#searchForm');
+
+      // 동적으로 검색 결과를 붙인다
+      // 인자 : 검색어, 검색 결과
+      function addSearchResultView( searchKeyword, { rows } ) {
+        console.log( searchKeyword ); // 검색어
+        console.log( rows );          // 배열 형태의 멤버를 객체형으로 가진 배열
+        let dyHtml = `
+        <p>검색어 : <span style="color: red;">${searchKeyword}</span></p>
+        <ul id="citys"></ul>
+        `
+        
+        // html을 동적으로 화면에 추가
+        // $().append(html) == 요소 객체.innerHtml = html
+
+        // 방법 1
+        $('#searchResultView').empty();        // 지우고
+        $('#searchResultView').append(dyHtml); // 쓰기
+        // 방법 2
+        // $('#searchResultView').html(dyHtml); // 덮어쓰기
+
+        // 결과 추가
+        for ( let row of rows ) {
+          let { id, nm, popu } = row;
+          //console.log( id, nm, popu  );
+          // 결과값 동적 추가, 상세보기를 진입할 수 있는 링크 제공
+          $('#citys').append(`<li>
+            <a href="/board/detail/${id}">${ nm }-${ popu }</a>
+          </li>`);
+        }
+
+        // 입력창 초기화
+        // $('#keyword').val('');
+      }
+    </script>
+  </body>
+</html>

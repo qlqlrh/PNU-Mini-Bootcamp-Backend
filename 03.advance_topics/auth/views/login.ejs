@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+
+    <div>
+      <!-- 로그인 -->
+      <!-- /auth/login으로 post 요청 -->
+      <fieldset>
+        <h3>로그인</h3>
+        <form method="post" action="/auth/login">
+            <input type="email" name="email" value="a@a.com"/>
+            <input type="password" name="password" value="1234"/>
+            <input type="submit" value="로그인"/>
+        </form>
+      </fieldset>
+    </div>
+  </body>
+</html>
